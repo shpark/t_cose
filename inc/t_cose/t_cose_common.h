@@ -12,8 +12,13 @@
 #ifndef __T_COSE_COMMON_H__
 #define __T_COSE_COMMON_H__
 
+#include "tee_api_types.h"
 #include <stdint.h>
 #include <stdbool.h>
+
+#ifdef T_COSE_USE_GP_TEE_CRYPTO
+#include <tee_api.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -169,7 +174,9 @@ enum t_cose_crypto_lib_t {
     T_COSE_CRYPTO_LIB_OPENSSL = 1,
      /** \c key_handle is a \c psa_key_handle_t in Arm's Platform Security
       * Architecture */
-    T_COSE_CRYPTO_LIB_PSA = 2
+    T_COSE_CRYPTO_LIB_PSA = 2,
+    /** \c key_obj is a \c TEE_ObjectHandle in GP TEE API */
+    T_COSE_CRYPTO_LIB_GP_TEE = 3
 };
 
 
@@ -194,6 +201,8 @@ struct t_cose_key {
         void *key_ptr;
         /** For libraries that use an integer handle to the key */
         uint64_t key_handle;
+        /** For GP TEE API */
+        TEE_ObjectHandle key_obj;
     } k;
 };
 
