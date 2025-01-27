@@ -17,6 +17,7 @@
 #include "t_cose/t_cose_common.h"
 #include "t_cose/q_useful_buf.h"
 #include "t_cose_standard_constants.h"
+#include "tee_api_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -454,6 +455,11 @@ struct t_cose_crypto_hash {
    #elif T_COSE_USE_B_CON_SHA256
         /* --- Specific context for Brad Conte's sha256.c --- */
         SHA256_CTX b_con_hash_context;
+
+    #elif T_COSE_USE_GP_TEE_CRYPTO
+        TEE_OperationHandle op;
+
+        /* XXX: need more fields? */
 
    #else
     /* --- Default: generic pointer / handle --- */
