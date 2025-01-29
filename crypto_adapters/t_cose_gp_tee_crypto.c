@@ -192,19 +192,19 @@ t_cose_crypto_verify(int32_t               cose_algorithm_id,
         return T_COSE_ERR_UNSUPPORTED_SIGNING_ALG;
     }
 
-    DMSG("meh 001");
+    DMSG("meheh 001");
 
     res = TEE_AllocateOperation(&op, alg, TEE_MODE_VERIFY, info.keySize);
     if (res != TEE_SUCCESS)
         return T_COSE_ERR_FAIL;
 
-    DMSG("meh 002");
+    DMSG("meheh 002");
 
     res = TEE_SetOperationKey(op, verification_key.k.key_obj);
     if (res != TEE_SUCCESS)
         goto out;
 
-    DMSG("meh 002b");
+    DMSG("meheh 002b");
 
     /*
      * NOTE: On signature verification failure, this function returns
@@ -218,7 +218,7 @@ t_cose_crypto_verify(int32_t               cose_algorithm_id,
     if (res != TEE_SUCCESS)
         goto out;
 
-    DMSG("meh 003");
+    DMSG("meheh 003");
 
 out:
     TEE_FreeOperation(op);
