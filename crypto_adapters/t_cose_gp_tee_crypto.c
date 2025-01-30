@@ -11,16 +11,11 @@
 #include <tee_api.h>
 #include <tee_api_defines.h>
 #include <tee_api_defines_extensions.h>
+#include <utee_defines.h>
 
-#include <trace.h>
-
-#include "qcbor/UsefulBuf.h"
 #include "t_cose/t_cose_common.h"
 #include "t_cose_crypto.h"
 #include "t_cose_standard_constants.h"
-#include "tee_api_compat.h"
-#include "tee_api_types.h"
-#include "utee_defines.h"
 
 bool t_cose_crypto_is_algorithm_supported(int32_t cose_algorithm_id) {
     switch (cose_algorithm_id) {
@@ -88,9 +83,6 @@ t_cose_crypto_sign(int32_t                cose_algorithm_id,
     if (res != TEE_SUCCESS || info.objectType != TEE_TYPE_ECDSA_KEYPAIR)
         return T_COSE_ERR_WRONG_TYPE_OF_KEY;
 
-    DMSG("info.keySize=%u", info.keySize);
-    DMSG("info.maxKeySize=%u", info.maxKeySize);
-
     res = TEE_GetObjectValueAttribute(signing_key.k.key_obj,
                                       TEE_ATTR_ECC_CURVE, &curve, NULL);
     if (res != TEE_SUCCESS)
@@ -111,19 +103,13 @@ t_cose_crypto_sign(int32_t                cose_algorithm_id,
         return T_COSE_ERR_UNSUPPORTED_SIGNING_ALG;
     }
 
-    DMSG("meh 001");
-
     res = TEE_AllocateOperation(&op, alg, TEE_MODE_SIGN, info.keySize);
     if (res != TEE_SUCCESS)
         return T_COSE_ERR_FAIL;
 
-    DMSG("meh 002");
-
     res = TEE_SetOperationKey(op, signing_key.k.key_obj);
     if (res != TEE_SUCCESS)
         goto out;
-
-    DMSG("meh 002b");
 
     res = TEE_AsymmetricSignDigest(op, NULL, 0,
                                    hash_to_sign.ptr, hash_to_sign.len,
@@ -132,12 +118,8 @@ t_cose_crypto_sign(int32_t                cose_algorithm_id,
     if (res != TEE_SUCCESS)
         goto out;
 
-    DMSG("meh 003");
-
     *signature = (struct q_useful_buf_c) { signature_buffer.ptr,
                                            signature_buffer.len };
-
-    DMSG("meh 004");
 
 out:
     TEE_FreeOperation(op);
@@ -169,9 +151,6 @@ t_cose_crypto_verify(int32_t               cose_algorithm_id,
          info.objectType != TEE_TYPE_ECDSA_PUBLIC_KEY))
         return T_COSE_ERR_WRONG_TYPE_OF_KEY;
 
-    DMSG("info.keySize=%u", info.keySize);
-    DMSG("info.maxKeySize=%u", info.maxKeySize);
-
     res = TEE_GetObjectValueAttribute(verification_key.k.key_obj,
                                       TEE_ATTR_ECC_CURVE, &curve, NULL);
     if (res != TEE_SUCCESS)
@@ -192,33 +171,21 @@ t_cose_crypto_verify(int32_t               cose_algorithm_id,
         return T_COSE_ERR_UNSUPPORTED_SIGNING_ALG;
     }
 
-    DMSG("meheh 001");
-
     res = TEE_AllocateOperation(&op, alg, TEE_MODE_VERIFY, info.keySize);
     if (res != TEE_SUCCESS)
         return T_COSE_ERR_FAIL;
-
-    DMSG("meheh 002");
 
     res = TEE_SetOperationKey(op, verification_key.k.key_obj);
     if (res != TEE_SUCCESS)
         goto out;
 
-    DMSG("meheh 002b");
-
     /*
-     * NOTE: On signature verification failure, this function returns
-     * TEE_ERROR_SIGNATURE_INVALID.
+     * NOTE: This function returns TEE_ERROR_SIGNATURE_INVALID on signature
+     * verification failure.
      */
     res = TEE_AsymmetricVerifyDigest(op, NULL, 0,
                                      hash_to_verify.ptr, hash_to_verify.len,
                                      signature.ptr, signature.len);
-    if (res == TEE_ERROR_SIGNATURE_INVALID)
-        DMSG("siganture verification failed... ding");
-    if (res != TEE_SUCCESS)
-        goto out;
-
-    DMSG("meheh 003");
 
 out:
     TEE_FreeOperation(op);
